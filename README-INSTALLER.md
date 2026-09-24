@@ -34,7 +34,18 @@ You can open the .iss file in the Inno Setup IDE and click "Compile", or you can
 
 Run the following command in your terminal:
 
+```
 iscc "liberation-fonts-setup.iss"
+```
 
+**Note:** If iscc is not recognized, you may need to add it to your system's PATH or use the full path to the executable, typically:
 
-(Note: If iscc is not recognized, you may need to add it to your system's PATH or use the full path to the executable, typically "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "liberation-fonts-setup.iss").
+```
+"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "liberation-fonts-setup.iss"
+```
+
+or, for Powershell:
+
+```
+& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "liberation-fonts-setup.iss"
+```

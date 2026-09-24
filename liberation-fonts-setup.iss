@@ -30,7 +30,7 @@ Source: "liberation-fonts-ttf-2.1.5\LiberationMono-BoldItalic.ttf"; DestDir: "{a
 [Code]
 var
   FontPage: TInputOptionWizardPage;
-  DisclaimerPage: TOutputMsgWizardPage;
+  DisclaimerPage: TOutputMsgMemoWizardPage;
 
 procedure InitializeWizard;
 var
@@ -74,10 +74,11 @@ begin
   FontPage.Values[10] := not FileExists(FontDir + 'LiberationMono-Italic.ttf');
   FontPage.Values[11] := not FileExists(FontDir + 'LiberationMono-BoldItalic.ttf');
 
-  { 2. Pagina Disclaimer e riepilogo Sovrascrittura prima dell'installazione }
-  DisclaimerPage := CreateOutputMsgPage(FontPage.ID,
+  { 2. Pagina Disclaimer modificata con area di testo scorrevole }
+  DisclaimerPage := CreateOutputMsgMemoPage(FontPage.ID,
     'Licenza e Riepilogo Operazioni',
     'Informazioni legali e dettaglio dei file da sovrascrivere',
+    'Leggi attentamente prima di procedere.',
     '');
 end;
 
@@ -111,7 +112,7 @@ begin
 
     Summary := Summary + #13#10 + 'Procedendo, confermi di accettare la licenza e l''installazione dei file elencati.';
     
-    DisclaimerPage.Msg := Summary;
+    DisclaimerPage.RichEditViewer.Text := Summary;
   end;
 end;
 

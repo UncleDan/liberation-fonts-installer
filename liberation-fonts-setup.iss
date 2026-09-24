@@ -1,6 +1,6 @@
 [Setup]
-AppName=Liberation Fonts Installer
-AppVersion=1.0
+AppName=Liberation Fonts
+AppVersion=2.1.5
 AppPublisher=Daniele Lolli (UncleDan)
 DefaultDirName={autopf}\LiberationFonts
 DefaultGroupName=Liberation Fonts
@@ -35,11 +35,30 @@ var
   AcceptFontsCheckbox: TNewCheckBox;
   AcceptInstallerCheckbox: TNewCheckBox;
   FontPage: TInputOptionWizardPage;
+  SelectAllCheckbox: TNewCheckBox;
   ConfirmPage: TOutputMsgMemoWizardPage;
 
 procedure LicenseCheckboxesClick(Sender: TObject);
 begin
   WizardForm.NextButton.Enabled := AcceptFontsCheckbox.Checked and AcceptInstallerCheckbox.Checked;
+end;
+
+procedure SelectAllClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  for i := 0 to FontPage.CheckListBox.Items.Count - 1 do
+  begin
+    FontPage.Values[i] := SelectAllCheckbox.Checked;
+  end;
+end;
+
+function GetFontStatusLabel(FontName, FileName, FontDir: String): String;
+begin
+  if FileExists(FontDir + FileName) then
+    Result := FontName + ' [Already Installed]'
+  else
+    Result := FontName + ' [Not Installed]';
 end;
 
 procedure InitializeWizard;
@@ -82,19 +101,20 @@ begin
     'You can manually select existing fonts to force an update or overwrite.',
     False, False);
 
-  FontPage.Add('Liberation Sans Regular');
-  FontPage.Add('Liberation Sans Bold');
-  FontPage.Add('Liberation Sans Italic');
-  FontPage.Add('Liberation Sans Bold Italic');
-  FontPage.Add('Liberation Serif Regular');
-  FontPage.Add('Liberation Serif Bold');
-  FontPage.Add('Liberation Serif Italic');
-  FontPage.Add('Liberation Serif Bold Italic');
-  FontPage.Add('Liberation Mono Regular');
-  FontPage.Add('Liberation Mono Bold');
-  FontPage.Add('Liberation Mono Italic');
-  FontPage.Add('Liberation Mono Bold Italic');
+  FontPage.Add(GetFontStatusLabel('Liberation Sans Regular', 'LiberationSans-Regular.ttf', FontDir));
+  FontPage.Add(GetFontStatusLabel('Liberation Sans Bold', 'LiberationSans-Bold.ttf', FontDir));
+  FontPage.Add(GetFontStatusLabel('Liberation Sans Italic', 'LiberationSans-Italic.ttf', FontDir));
+  FontPage.Add(GetFontStatusLabel('Liberation Sans Bold Italic', 'LiberationSans-BoldItalic.ttf', FontDir));
+  FontPage.Add(GetFontStatusLabel('Liberation Serif Regular', 'LiberationSerif-Regular.ttf', FontDir));
+  FontPage.Add(GetFontStatusLabel('Liberation Serif Bold', 'LiberationSerif-Bold.ttf', FontDir));
+  FontPage.Add(GetFontStatusLabel('Liberation Serif Italic', 'LiberationSerif-Italic.ttf', FontDir));
+  FontPage.Add(GetFontStatusLabel('Liberation Serif Bold Italic', 'LiberationSerif-BoldItalic.ttf', FontDir));
+  FontPage.Add(GetFontStatusLabel('Liberation Mono Regular', 'LiberationMono-Regular.ttf', FontDir));
+  FontPage.Add(GetFontStatusLabel('Liberation Mono Bold', 'LiberationMono-Bold.ttf', FontDir));
+  FontPage.Add(GetFontStatusLabel('Liberation Mono Italic', 'LiberationMono-Italic.ttf', FontDir));
+  FontPage.Add(GetFontStatusLabel('Liberation Mono Bold Italic', 'LiberationMono-BoldItalic.ttf', FontDir));
 
+  { Check items by default ONLY if they do not exist }
   FontPage.Values[0] := not FileExists(FontDir + 'LiberationSans-Regular.ttf');
   FontPage.Values[1] := not FileExists(FontDir + 'LiberationSans-Bold.ttf');
   FontPage.Values[2] := not FileExists(FontDir + 'LiberationSans-Italic.ttf');
@@ -107,6 +127,17 @@ begin
   FontPage.Values[9] := not FileExists(FontDir + 'LiberationMono-Bold.ttf');
   FontPage.Values[10] := not FileExists(FontDir + 'LiberationMono-Italic.ttf');
   FontPage.Values[11] := not FileExists(FontDir + 'LiberationMono-BoldItalic.ttf');
+
+  { Add Select All Checkbox }
+  SelectAllCheckbox := TNewCheckBox.Create(FontPage);
+  SelectAllCheckbox.Parent := FontPage.Surface;
+  SelectAllCheckbox.Caption := 'Select / Deselect All';
+  SelectAllCheckbox.Left := FontPage.CheckListBox.Left;
+  SelectAllCheckbox.Top := FontPage.SurfaceHeight - SelectAllCheckbox.Height;
+  SelectAllCheckbox.Width := FontPage.SurfaceWidth;
+  SelectAllCheckbox.OnClick := @SelectAllClick;
+  
+  FontPage.CheckListBox.Height := FontPage.CheckListBox.Height - SelectAllCheckbox.Height - 8;
 
   { 3. Confirmation Page }
   ConfirmPage := CreateOutputMsgMemoPage(FontPage.ID,
@@ -124,6 +155,7 @@ var
   ExistingFiles: String;
   NewFiles: String;
   FileNameStr: String;
+  CleanFontName: String;
   FontDir: String;
 begin
   if CurPageID = LicensePage.ID then
@@ -164,24 +196,24 @@ begin
       begin
         AnySelected := True;
         case i of
-          0: FileNameStr := 'LiberationSans-Regular.ttf';
-          1: FileNameStr := 'LiberationSans-Bold.ttf';
-          2: FileNameStr := 'LiberationSans-Italic.ttf';
-          3: FileNameStr := 'LiberationSans-BoldItalic.ttf';
-          4: FileNameStr := 'LiberationSerif-Regular.ttf';
-          5: FileNameStr := 'LiberationSerif-Bold.ttf';
-          6: FileNameStr := 'LiberationSerif-Italic.ttf';
-          7: FileNameStr := 'LiberationSerif-BoldItalic.ttf';
-          8: FileNameStr := 'LiberationMono-Regular.ttf';
-          9: FileNameStr := 'LiberationMono-Bold.ttf';
-          10: FileNameStr := 'LiberationMono-Italic.ttf';
-          11: FileNameStr := 'LiberationMono-BoldItalic.ttf';
+          0: begin FileNameStr := 'LiberationSans-Regular.ttf'; CleanFontName := 'Liberation Sans Regular'; end;
+          1: begin FileNameStr := 'LiberationSans-Bold.ttf'; CleanFontName := 'Liberation Sans Bold'; end;
+          2: begin FileNameStr := 'LiberationSans-Italic.ttf'; CleanFontName := 'Liberation Sans Italic'; end;
+          3: begin FileNameStr := 'LiberationSans-BoldItalic.ttf'; CleanFontName := 'Liberation Sans Bold Italic'; end;
+          4: begin FileNameStr := 'LiberationSerif-Regular.ttf'; CleanFontName := 'Liberation Serif Regular'; end;
+          5: begin FileNameStr := 'LiberationSerif-Bold.ttf'; CleanFontName := 'Liberation Serif Bold'; end;
+          6: begin FileNameStr := 'LiberationSerif-Italic.ttf'; CleanFontName := 'Liberation Serif Italic'; end;
+          7: begin FileNameStr := 'LiberationSerif-BoldItalic.ttf'; CleanFontName := 'Liberation Serif Bold Italic'; end;
+          8: begin FileNameStr := 'LiberationMono-Regular.ttf'; CleanFontName := 'Liberation Mono Regular'; end;
+          9: begin FileNameStr := 'LiberationMono-Bold.ttf'; CleanFontName := 'Liberation Mono Bold'; end;
+          10: begin FileNameStr := 'LiberationMono-Italic.ttf'; CleanFontName := 'Liberation Mono Italic'; end;
+          11: begin FileNameStr := 'LiberationMono-BoldItalic.ttf'; CleanFontName := 'Liberation Mono Bold Italic'; end;
         end;
 
         if FileExists(FontDir + FileNameStr) then
-          ExistingFiles := ExistingFiles + '  [OVERWRITE] ' + FontPage.CheckListBox.Items[i] + #13#10
+          ExistingFiles := ExistingFiles + '  [OVERWRITE] ' + CleanFontName + #13#10
         else
-          NewFiles := NewFiles + '  [INSTALL] ' + FontPage.CheckListBox.Items[i] + #13#10;
+          NewFiles := NewFiles + '  [INSTALL] ' + CleanFontName + #13#10;
       end;
     end;
 

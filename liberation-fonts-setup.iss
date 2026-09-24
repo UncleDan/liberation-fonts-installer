@@ -11,6 +11,7 @@ PrivilegesRequired=admin
 WizardStyle=modern
 DisableDirPage=yes
 DisableProgramGroupPage=yes
+DisableReadyPage=yes
 LanguageDetectionMethod=none
 ShowLanguageDialog=no
 
@@ -160,6 +161,10 @@ var
   CleanFontName: String;
   FontDir: String;
 begin
+  { Reset Next button text for standard pages }
+  if CurPageID <> ConfirmPage.ID then
+    WizardForm.NextButton.Caption := SetupMessage(msgButtonNext);
+
   if CurPageID = LicensePage.ID then
   begin
     WizardForm.NextButton.Enabled := AcceptFontsCheckbox.Checked and AcceptInstallerCheckbox.Checked;
@@ -187,6 +192,8 @@ begin
 
   if CurPageID = ConfirmPage.ID then
   begin
+    WizardForm.NextButton.Caption := 'Install';
+    
     FontDir := ExpandConstant('{autofonts}\');
     AnySelected := False;
     NewFiles := '';

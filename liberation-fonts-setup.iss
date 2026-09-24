@@ -1,6 +1,6 @@
 [Setup]
-AppName=Liberation Fonts Installer
-AppVersion=1.0b1
+AppName=Liberation Fonts
+AppVersion=1.0
 AppPublisher=Daniele Lolli (UncleDan)
 DefaultDirName={autopf}\LiberationFonts
 DefaultGroupName=Liberation Fonts
@@ -11,42 +11,67 @@ PrivilegesRequired=admin
 WizardStyle=modern
 DisableDirPage=yes
 DisableProgramGroupPage=yes
+LanguageDetectionMethod=none
+ShowLanguageDialog=no
 
 [Files]
-; Assicurati di avere la sottocartella "fonts" vicino a questo script con i relativi file TTF
-Source: "liberation-fonts-ttf-2.1.5\LiberationSans-Regular.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Sans"; Flags: uninsneveruninstall; Check: IsFontSelected(0)
-Source: "liberation-fonts-ttf-2.1.5\LiberationSans-Bold.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Sans Bold"; Flags: uninsneveruninstall; Check: IsFontSelected(1)
-Source: "liberation-fonts-ttf-2.1.5\LiberationSans-Italic.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Sans Italic"; Flags: uninsneveruninstall; Check: IsFontSelected(2)
-Source: "liberation-fonts-ttf-2.1.5\LiberationSans-BoldItalic.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Sans Bold Italic"; Flags: uninsneveruninstall; Check: IsFontSelected(3)
-Source: "liberation-fonts-ttf-2.1.5\LiberationSerif-Regular.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Serif"; Flags: uninsneveruninstall; Check: IsFontSelected(4)
-Source: "liberation-fonts-ttf-2.1.5\LiberationSerif-Bold.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Serif Bold"; Flags: uninsneveruninstall; Check: IsFontSelected(5)
-Source: "liberation-fonts-ttf-2.1.5\LiberationSerif-Italic.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Serif Italic"; Flags: uninsneveruninstall; Check: IsFontSelected(6)
-Source: "liberation-fonts-ttf-2.1.5\LiberationSerif-BoldItalic.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Serif Bold Italic"; Flags: uninsneveruninstall; Check: IsFontSelected(7)
-Source: "liberation-fonts-ttf-2.1.5\LiberationMono-Regular.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Mono"; Flags: uninsneveruninstall; Check: IsFontSelected(8)
-Source: "liberation-fonts-ttf-2.1.5\LiberationMono-Bold.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Mono Bold"; Flags: uninsneveruninstall; Check: IsFontSelected(9)
-Source: "liberation-fonts-ttf-2.1.5\LiberationMono-Italic.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Mono Italic"; Flags: uninsneveruninstall; Check: IsFontSelected(10)
-Source: "liberation-fonts-ttf-2.1.5\LiberationMono-BoldItalic.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Mono Bold Italic"; Flags: uninsneveruninstall; Check: IsFontSelected(11)
+Source: "fonts\LiberationSans-Regular.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Sans"; Flags: uninsneveruninstall; Check: IsFontSelected(0)
+Source: "fonts\LiberationSans-Bold.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Sans Bold"; Flags: uninsneveruninstall; Check: IsFontSelected(1)
+Source: "fonts\LiberationSans-Italic.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Sans Italic"; Flags: uninsneveruninstall; Check: IsFontSelected(2)
+Source: "fonts\LiberationSans-BoldItalic.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Sans Bold Italic"; Flags: uninsneveruninstall; Check: IsFontSelected(3)
+Source: "fonts\LiberationSerif-Regular.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Serif"; Flags: uninsneveruninstall; Check: IsFontSelected(4)
+Source: "fonts\LiberationSerif-Bold.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Serif Bold"; Flags: uninsneveruninstall; Check: IsFontSelected(5)
+Source: "fonts\LiberationSerif-Italic.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Serif Italic"; Flags: uninsneveruninstall; Check: IsFontSelected(6)
+Source: "fonts\LiberationSerif-BoldItalic.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Serif Bold Italic"; Flags: uninsneveruninstall; Check: IsFontSelected(7)
+Source: "fonts\LiberationMono-Regular.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Mono"; Flags: uninsneveruninstall; Check: IsFontSelected(8)
+Source: "fonts\LiberationMono-Bold.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Mono Bold"; Flags: uninsneveruninstall; Check: IsFontSelected(9)
+Source: "fonts\LiberationMono-Italic.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Mono Italic"; Flags: uninsneveruninstall; Check: IsFontSelected(10)
+Source: "fonts\LiberationMono-BoldItalic.ttf"; DestDir: "{autofonts}"; FontInstall: "Liberation Mono Bold Italic"; Flags: uninsneveruninstall; Check: IsFontSelected(11)
 
 [Code]
 var
+  InstallerScriptVersion: String;
+  LicensePage: TOutputMsgMemoWizardPage;
+  AcceptCheckbox: TNewCheckBox;
   FontPage: TInputOptionWizardPage;
-  DisclaimerPage: TOutputMsgMemoWizardPage;
+  ConfirmPage: TOutputMsgMemoWizardPage;
+
+procedure LicenseCheckboxClick(Sender: TObject);
+begin
+  WizardForm.NextButton.Enabled := AcceptCheckbox.Checked;
+end;
 
 procedure InitializeWizard;
 var
   FontDir: String;
 begin
+  InstallerScriptVersion := '1.0';
   FontDir := ExpandConstant('{autofonts}\');
 
-  { 1. Pagina di selezione dinamica dei Font }
-  FontPage := CreateInputOptionPage(wpWelcome,
-    'Selezione Font Liberation',
-    'Quali font desideri installare o aggiornare?',
-    'I font non presenti nel sistema sono stati selezionati automaticamente. ' +
-    'Puoi selezionare manualmente quelli già esistenti per forzarne la sovrascrittura o l''aggiornamento.',
+  { 1. Custom License Page with Checkbox }
+  LicensePage := CreateOutputMsgMemoPage(wpWelcome,
+    'License Agreement',
+    'Please read the following important information before continuing.',
+    'Review the licensing terms for both the Liberation Fonts and this installer.',
+    '');
+
+  AcceptCheckbox := TNewCheckBox.Create(LicensePage);
+  AcceptCheckbox.Parent := LicensePage.Surface;
+  AcceptCheckbox.Caption := 'I accept the terms of the licenses';
+  AcceptCheckbox.Top := LicensePage.RichEditViewer.Top + LicensePage.RichEditViewer.Height + 8;
+  AcceptCheckbox.Width := LicensePage.SurfaceWidth;
+  AcceptCheckbox.OnClick := @LicenseCheckboxClick;
+  
+  LicensePage.RichEditViewer.Height := LicensePage.RichEditViewer.Height - AcceptCheckbox.Height - 8;
+
+  { 2. Dynamic Font Selection Page }
+  FontPage := CreateInputOptionPage(LicensePage.ID,
+    'Font Selection',
+    'Which fonts do you want to install or update?',
+    'Fonts not currently installed on your system have been selected automatically. ' +
+    'You can manually select existing fonts to force an update or overwrite.',
     False, False);
 
-  { Aggiunta dei font alla checklist. L'indice (0-11) deve corrispondere a IsFontSelected }
   FontPage.Add('Liberation Sans Regular');
   FontPage.Add('Liberation Sans Bold');
   FontPage.Add('Liberation Sans Italic');
@@ -60,7 +85,6 @@ begin
   FontPage.Add('Liberation Mono Italic');
   FontPage.Add('Liberation Mono Bold Italic');
 
-  { Controllo di esistenza file: spunta solo quelli NON presenti }
   FontPage.Values[0] := not FileExists(FontDir + 'LiberationSans-Regular.ttf');
   FontPage.Values[1] := not FileExists(FontDir + 'LiberationSans-Bold.ttf');
   FontPage.Values[2] := not FileExists(FontDir + 'LiberationSans-Italic.ttf');
@@ -74,11 +98,11 @@ begin
   FontPage.Values[10] := not FileExists(FontDir + 'LiberationMono-Italic.ttf');
   FontPage.Values[11] := not FileExists(FontDir + 'LiberationMono-BoldItalic.ttf');
 
-  { 2. Pagina Disclaimer modificata con area di testo scorrevole }
-  DisclaimerPage := CreateOutputMsgMemoPage(FontPage.ID,
-    'Licenza e Riepilogo Operazioni',
-    'Informazioni legali e dettaglio dei file da sovrascrivere',
-    'Leggi attentamente prima di procedere.',
+  { 3. Confirmation Page }
+  ConfirmPage := CreateOutputMsgMemoPage(FontPage.ID,
+    'Installation Summary',
+    'Review the actions that will be performed.',
+    'Please confirm the installation and overwrite operations before proceeding.',
     '');
 end;
 
@@ -87,32 +111,87 @@ var
   Summary: String;
   i: Integer;
   AnySelected: Boolean;
+  ExistingFiles: String;
+  NewFiles: String;
+  FileNameStr: String;
+  FontDir: String;
 begin
-  if CurPageID = DisclaimerPage.ID then
+  if CurPageID = LicensePage.ID then
   begin
-    Summary := 'LICENZA E INFORMAZIONI:' + #13#10 +
-               '- I font della famiglia Liberation sono distribuiti sotto licenza SIL Open Font License 1.1.' + #13#10 +
-               '- Il codice sorgente e il repository ufficiale sono ospitati su GitHub.' + #13#10 +
-               '- ATTENZIONE: Questo pacchetto di installazione non è in alcun modo affiliato, ' +
-               'sponsorizzato o supportato dagli sviluppatori originali.' + #13#10#13#10 +
-               'RIEPILOGO INSTALLAZIONE / SOVRASCRITTURE:' + #13#10;
+    WizardForm.NextButton.Enabled := AcceptCheckbox.Checked;
+    LicensePage.RichEditViewer.Text := 
+      '--- LIBERATION FONTS LICENSE ---' + #13#10 +
+      'The Liberation Fonts are distributed under the SIL Open Font License 1.1.' + #13#10 +
+      'The source code and official repository are hosted on GitHub.' + #13#10 +
+      'PLEASE NOTE: This installation package is in no way affiliated, ' +
+      'sponsored, or supported by the original Liberation Fonts developers.' + #13#10#13#10 +
+      '--- INSTALLER SCRIPT LICENSE ---' + #13#10 +
+      'Installer Script Version: ' + InstallerScriptVersion + #13#10 +
+      'Author: Daniele Lolli (UncleDan)' + #13#10 +
+      'MIT License' + #13#10#13#10 +
+      'Copyright (c) 2026 Daniele Lolli (UncleDan)' + #13#10#13#10 +
+      'Permission is hereby granted, free of charge, to any person obtaining a copy ' +
+      'of this software and associated documentation files (the "Software"), to deal ' +
+      'in the Software without restriction, including without limitation the rights ' +
+      'to use, copy, modify, merge, publish, distribute, sublicense, and/or sell ' +
+      'copies of the Software, and to permit persons to whom the Software is ' +
+      'furnished to do so, subject to the following conditions:' + #13#10#13#10 +
+      'The above copyright notice and this permission notice shall be included in all ' +
+      'copies or substantial portions of the Software.';
+  end;
 
+  if CurPageID = ConfirmPage.ID then
+  begin
+    FontDir := ExpandConstant('{autofonts}\');
     AnySelected := False;
+    NewFiles := '';
+    ExistingFiles := '';
+
     for i := 0 to (FontPage.CheckListBox.Items.Count - 1) do
     begin
       if FontPage.Values[i] then
       begin
-        Summary := Summary + '  [+] ' + FontPage.CheckListBox.Items[i] + #13#10;
         AnySelected := True;
+        { Determine filename based on index to check for existence }
+        case i of
+          0: FileNameStr := 'LiberationSans-Regular.ttf';
+          1: FileNameStr := 'LiberationSans-Bold.ttf';
+          2: FileNameStr := 'LiberationSans-Italic.ttf';
+          3: FileNameStr := 'LiberationSans-BoldItalic.ttf';
+          4: FileNameStr := 'LiberationSerif-Regular.ttf';
+          5: FileNameStr := 'LiberationSerif-Bold.ttf';
+          6: FileNameStr := 'LiberationSerif-Italic.ttf';
+          7: FileNameStr := 'LiberationSerif-BoldItalic.ttf';
+          8: FileNameStr := 'LiberationMono-Regular.ttf';
+          9: FileNameStr := 'LiberationMono-Bold.ttf';
+          10: FileNameStr := 'LiberationMono-Italic.ttf';
+          11: FileNameStr := 'LiberationMono-BoldItalic.ttf';
+        end;
+
+        if FileExists(FontDir + FileNameStr) then
+          ExistingFiles := ExistingFiles + '  [OVERWRITE] ' + FontPage.CheckListBox.Items[i] + #13#10
+        else
+          NewFiles := NewFiles + '  [INSTALL] ' + FontPage.CheckListBox.Items[i] + #13#10;
       end;
     end;
 
-    if not AnySelected then
-      Summary := Summary + '  (Nessun font selezionato. L''installazione non modificherà alcun file.)' + #13#10;
-
-    Summary := Summary + #13#10 + 'Procedendo, confermi di accettare la licenza e l''installazione dei file elencati.';
+    Summary := 'SUMMARY OF OPERATIONS:' + #13#10#13#10;
     
-    DisclaimerPage.RichEditViewer.Text := Summary;
+    if not AnySelected then
+    begin
+      Summary := Summary + '(No fonts selected. The installer will not modify any files.)' + #13#10;
+    end
+    else
+    begin
+      if NewFiles <> '' then
+        Summary := Summary + 'NEW FONTS TO INSTALL:' + #13#10 + NewFiles + #13#10;
+        
+      if ExistingFiles <> '' then
+        Summary := Summary + 'WARNING - THE FOLLOWING EXISTING FONTS WILL BE OVERWRITTEN:' + #13#10 + ExistingFiles + #13#10;
+    end;
+
+    Summary := Summary + #13#10 + 'Click "Install" to execute these actions.';
+    ConfirmPage.RichEditViewer.Text := Summary;
   end;
 end;
 

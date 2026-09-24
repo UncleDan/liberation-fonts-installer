@@ -161,8 +161,12 @@ var
   CleanFontName: String;
   FontDir: String;
 begin
-  { Reset Next button text for standard pages }
-  if CurPageID <> ConfirmPage.ID then
+  { Handle Next Button text dynamically based on the current page }
+  if CurPageID = ConfirmPage.ID then
+    WizardForm.NextButton.Caption := 'Install'
+  else if CurPageID = wpFinished then
+    WizardForm.NextButton.Caption := SetupMessage(msgButtonFinish)
+  else
     WizardForm.NextButton.Caption := SetupMessage(msgButtonNext);
 
   if CurPageID = LicensePage.ID then
@@ -192,8 +196,6 @@ begin
 
   if CurPageID = ConfirmPage.ID then
   begin
-    WizardForm.NextButton.Caption := 'Install';
-    
     FontDir := ExpandConstant('{autofonts}\');
     AnySelected := False;
     NewFiles := '';

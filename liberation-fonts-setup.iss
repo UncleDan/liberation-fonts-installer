@@ -1,6 +1,6 @@
 [Setup]
 AppName=Liberation Fonts
-AppVersion=2.1.5
+AppVersion=1.0
 AppPublisher=Daniele Lolli (UncleDan)
 DefaultDirName={autopf}\LiberationFonts
 DefaultGroupName=Liberation Fonts
@@ -31,6 +31,7 @@ Source: "fonts\LiberationMono-BoldItalic.ttf"; DestDir: "{autofonts}"; FontInsta
 [Code]
 var
   InstallerScriptVersion: String;
+  FontPackageVersion: String;
   LicensePage: TOutputMsgMemoWizardPage;
   AcceptFontsCheckbox: TNewCheckBox;
   AcceptInstallerCheckbox: TNewCheckBox;
@@ -66,13 +67,14 @@ var
   FontDir: String;
 begin
   InstallerScriptVersion := '1.0';
+  FontPackageVersion := '2.1.5';
   FontDir := ExpandConstant('{autofonts}\');
 
   { 1. Custom License Page with Two Checkboxes }
   LicensePage := CreateOutputMsgMemoPage(wpWelcome,
     'License Agreements',
     'Please read the following important information before continuing.',
-    'Review the licensing terms for both the Liberation Fonts and this installer script.',
+    'Review the licensing terms for both the Liberation Fonts (v. ' + FontPackageVersion + ') and this installer script (v. ' + InstallerScriptVersion + ').',
     '');
 
   AcceptInstallerCheckbox := TNewCheckBox.Create(LicensePage);
@@ -96,7 +98,7 @@ begin
   { 2. Dynamic Font Selection Page }
   FontPage := CreateInputOptionPage(LicensePage.ID,
     'Font Selection',
-    'Which fonts do you want to install or update?',
+    'Which Liberation Fonts (v. ' + FontPackageVersion + ') do you want to install or update?',
     'Fonts not currently installed on your system have been selected automatically. ' +
     'You can manually select existing fonts to force an update or overwrite.',
     False, False);
@@ -162,7 +164,7 @@ begin
   begin
     WizardForm.NextButton.Enabled := AcceptFontsCheckbox.Checked and AcceptInstallerCheckbox.Checked;
     LicensePage.RichEditViewer.Text := 
-      '--- LIBERATION FONTS LICENSE ---' + #13#10 +
+      '--- LIBERATION FONTS (v. ' + FontPackageVersion + ') LICENSE ---' + #13#10 +
       'The Liberation Fonts are distributed under the SIL Open Font License 1.1.' + #13#10 +
       'The source code and official repository are hosted on GitHub at:' + #13#10 +
       'https://github.com/liberationfonts/liberation-fonts' + #13#10#13#10 +
@@ -217,7 +219,7 @@ begin
       end;
     end;
 
-    Summary := 'SUMMARY OF OPERATIONS:' + #13#10#13#10;
+    Summary := 'SUMMARY OF OPERATIONS (Installing Fonts v. ' + FontPackageVersion + '):' + #13#10#13#10;
     
     if not AnySelected then
     begin

@@ -1,5 +1,5 @@
 [Setup]
-AppName=Liberation Fonts
+AppName=Liberation Fonts Installer
 AppVersion=1.0
 AppPublisher=Daniele Lolli (UncleDan)
 DefaultDirName={autopf}\LiberationFonts
@@ -32,13 +32,14 @@ Source: "fonts\LiberationMono-BoldItalic.ttf"; DestDir: "{autofonts}"; FontInsta
 var
   InstallerScriptVersion: String;
   LicensePage: TOutputMsgMemoWizardPage;
-  AcceptCheckbox: TNewCheckBox;
+  AcceptFontsCheckbox: TNewCheckBox;
+  AcceptInstallerCheckbox: TNewCheckBox;
   FontPage: TInputOptionWizardPage;
   ConfirmPage: TOutputMsgMemoWizardPage;
 
-procedure LicenseCheckboxClick(Sender: TObject);
+procedure LicenseCheckboxesClick(Sender: TObject);
 begin
-  WizardForm.NextButton.Enabled := AcceptCheckbox.Checked;
+  WizardForm.NextButton.Enabled := AcceptFontsCheckbox.Checked and AcceptInstallerCheckbox.Checked;
 end;
 
 procedure InitializeWizard;
@@ -48,21 +49,30 @@ begin
   InstallerScriptVersion := '1.0';
   FontDir := ExpandConstant('{autofonts}\');
 
-  { 1. Custom License Page with Checkbox }
+  { 1. Custom License Page with Two Checkboxes }
   LicensePage := CreateOutputMsgMemoPage(wpWelcome,
-    'License Agreement',
+    'License Agreements',
     'Please read the following important information before continuing.',
-    'Review the licensing terms for both the Liberation Fonts and this installer.',
+    'Review the licensing terms for both the Liberation Fonts and this installer script.',
     '');
 
-  AcceptCheckbox := TNewCheckBox.Create(LicensePage);
-  AcceptCheckbox.Parent := LicensePage.Surface;
-  AcceptCheckbox.Caption := 'I accept the terms of the licenses';
-  AcceptCheckbox.Top := LicensePage.RichEditViewer.Top + LicensePage.RichEditViewer.Height + 8;
-  AcceptCheckbox.Width := LicensePage.SurfaceWidth;
-  AcceptCheckbox.OnClick := @LicenseCheckboxClick;
+  AcceptInstallerCheckbox := TNewCheckBox.Create(LicensePage);
+  AcceptInstallerCheckbox.Parent := LicensePage.Surface;
+  AcceptInstallerCheckbox.Caption := 'I accept the MIT License for the Installer Script';
+  AcceptInstallerCheckbox.Left := 0;
+  AcceptInstallerCheckbox.Width := LicensePage.SurfaceWidth;
+  AcceptInstallerCheckbox.Top := LicensePage.SurfaceHeight - AcceptInstallerCheckbox.Height;
+  AcceptInstallerCheckbox.OnClick := @LicenseCheckboxesClick;
+
+  AcceptFontsCheckbox := TNewCheckBox.Create(LicensePage);
+  AcceptFontsCheckbox.Parent := LicensePage.Surface;
+  AcceptFontsCheckbox.Caption := 'I accept the SIL Open Font License 1.1 for Liberation Fonts';
+  AcceptFontsCheckbox.Left := 0;
+  AcceptFontsCheckbox.Width := LicensePage.SurfaceWidth;
+  AcceptFontsCheckbox.Top := AcceptInstallerCheckbox.Top - AcceptFontsCheckbox.Height - 4;
+  AcceptFontsCheckbox.OnClick := @LicenseCheckboxesClick;
   
-  LicensePage.RichEditViewer.Height := LicensePage.RichEditViewer.Height - AcceptCheckbox.Height - 8;
+  LicensePage.RichEditViewer.Height := AcceptFontsCheckbox.Top - LicensePage.RichEditViewer.Top - 8;
 
   { 2. Dynamic Font Selection Page }
   FontPage := CreateInputOptionPage(LicensePage.ID,
@@ -118,11 +128,12 @@ var
 begin
   if CurPageID = LicensePage.ID then
   begin
-    WizardForm.NextButton.Enabled := AcceptCheckbox.Checked;
+    WizardForm.NextButton.Enabled := AcceptFontsCheckbox.Checked and AcceptInstallerCheckbox.Checked;
     LicensePage.RichEditViewer.Text := 
       '--- LIBERATION FONTS LICENSE ---' + #13#10 +
       'The Liberation Fonts are distributed under the SIL Open Font License 1.1.' + #13#10 +
-      'The source code and official repository are hosted on GitHub.' + #13#10 +
+      'The source code and official repository are hosted on GitHub at:' + #13#10 +
+      'https://github.com/liberationfonts/liberation-fonts' + #13#10#13#10 +
       'PLEASE NOTE: This installation package is in no way affiliated, ' +
       'sponsored, or supported by the original Liberation Fonts developers.' + #13#10#13#10 +
       '--- INSTALLER SCRIPT LICENSE ---' + #13#10 +
@@ -152,7 +163,6 @@ begin
       if FontPage.Values[i] then
       begin
         AnySelected := True;
-        { Determine filename based on index to check for existence }
         case i of
           0: FileNameStr := 'LiberationSans-Regular.ttf';
           1: FileNameStr := 'LiberationSans-Bold.ttf';
